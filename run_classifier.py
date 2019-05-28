@@ -399,7 +399,7 @@ def convert_single_example(ex_index, example, label_list, max_seq_length,
     # Modifies `tokens_a` and `tokens_b` in place so that the total
     # length is less than the specified length.
     # Account for [CLS], [SEP], [SEP] with "- 3"
-    _truncate_seq_pair(tokens_a, tokens_b, max_seq_length - 3)
+    tokens_a, tokens_b = _truncate_seq_pair(tokens_a, tokens_b, max_seq_length - 3)
   else:
     # Account for [CLS] and [SEP] with "- 2"
     if len(tokens_a) > max_seq_length - 2:
@@ -561,14 +561,27 @@ def _truncate_seq_pair(tokens_a, tokens_b, max_length):
   # one token at a time. This makes more sense than truncating an equal percent
   # of tokens from each, since if one sequence is very short then each token
   # that's truncated likely contains more information than a longer sequence.
-  while True:
-    total_length = len(tokens_a) + len(tokens_b)
-    if total_length <= max_length:
-      break
-    if len(tokens_a) > len(tokens_b):
-      tokens_a.pop()
-    else:
-      tokens_b.pop()
+  
+  # This simulation is too slow
+  # while True:
+  #   total_length = len(tokens_a) + len(tokens_b)
+  #   if total_length <= max_length:
+  #     break
+  #   if len(tokens_a) > len(tokens_b):
+  #     tokens_a.pop()
+  #   else:
+  #     tokens_b.pop()
+  
+  total_length = len(tokens_a) + len(tokens_b)
+  if total_length <= max_length:
+      return tokens_a, tokens_b
+  
+  left = int(max_length / 2) + max_length % 2 
+  right = int(max_length / 2)
+  
+  tokens_a = tokens_a[:left]
+  tokens_b = tokens_b[:right]
+  return tokens_a, tokens_b
 
 
 def create_model(bert_config, is_training, input_ids, input_mask, segment_ids,
